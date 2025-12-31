@@ -293,6 +293,8 @@ async function doFarmJob() {
 
     await initBrowser();
     await page.goto(CONFIG.routes.FARM);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(3000);  // 额外等待确保 DOM 渲染完成
 
     // 启动定时巡检
     setInterval(doFarmJob, CONFIG.checkInterval);
