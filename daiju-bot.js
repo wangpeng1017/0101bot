@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
 const CONFIG = {
     // 账号信息（改成自己的）
     userId: "1264",
-    apiKey: "bRWJH3EIFSia0pF/COv+1aRh/jm50q4=",
+    apiKey: "M7mGcDG/uU5dBTAZbgdNQJYXB7zl2s0=",
 
     // 路由
     routes: {
