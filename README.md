@@ -11,6 +11,14 @@
 - ✅ 自动登录、收割、种植、出售
 - ✅ 增强错误处理和自动恢复
 
+### 2. wong-checkin (WONG公益站签到)
+每天自动签到领取额度
+
+**功能特性：**
+- ✅ 每天早上 8:00 自动签到
+- ✅ 使用 LinuxDO OAuth 登录
+- ✅ 签到成功后记录奖励金额
+
 ## 部署
 
 ### 快速部署
@@ -28,13 +36,13 @@ ssh root@8.130.182.148
 cd /root/0101bot
 git pull
 npm install
-pm2 restart daiju-bot
+pm2 restart all
 ```
 
 ## 配置
 
+### daiju-bot 配置
 编辑 `daiju-bot.js` 中的配置：
-
 ```javascript
 const CONFIG = {
     userId: "你的ID",
@@ -44,17 +52,40 @@ const CONFIG = {
 };
 ```
 
+### wong-checkin 配置
+编辑 `wong-checkin.js` 中的配置：
+```javascript
+const CONFIG = {
+    linuxdo: {
+        username: "你的LinuxDO用户名",
+        password: "你的LinuxDO密码"
+    },
+    schedule: "0 0 8 * * *"  // cron格式：每天8点
+};
+```
+
 ## PM2 命令
 
 ```bash
-pm2 logs daiju-bot      # 查看日志
-pm2 restart daiju-bot   # 重启
-pm2 stop daiju-bot      # 停止
-pm2 delete daiju-bot    # 删除
+pm2 list                  # 查看所有进程
+pm2 logs                  # 查看所有日志
+pm2 logs daiju-bot        # 查看农场日志
+pm2 logs wong-checkin     # 查看签到日志
+pm2 restart all           # 重启所有
+pm2 stop all              # 停止所有
+```
+
+## 手动执行签到
+
+```bash
+# 立即执行一次签到
+node wong-checkin.js --now
+# 或
+npm run checkin
 ```
 
 ## 服务器信息
 
 - 服务器: 8.130.182.148
 - 项目路径: /root/0101bot
-- PM2 进程: daiju-bot
+- PM2 进程: daiju-bot, wong-checkin

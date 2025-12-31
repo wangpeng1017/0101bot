@@ -1,18 +1,20 @@
 {
   "name": "0101bot",
   "version": "2.0.0",
-  "description": "自动化机器人集合 - 大桔农场等",
+  "description": "自动化机器人集合 - 大桔农场、WONG签到等",
   "main": "daiju-bot.js",
   "scripts": {
     "start": "node daiju-bot.js",
+    "checkin": "node wong-checkin.js --now",
     "pm2:start": "pm2 start ecosystem.config.js",
-    "pm2:stop": "pm2 stop daiju-bot",
-    "pm2:restart": "pm2 restart daiju-bot",
-    "pm2:logs": "pm2 logs daiju-bot",
+    "pm2:stop": "pm2 stop all",
+    "pm2:restart": "pm2 restart all",
+    "pm2:logs": "pm2 logs",
     "deploy": "bash deploy.sh"
   },
   "dependencies": {
-    "playwright": "^1.49.0"
+    "playwright": "^1.49.0",
+    "node-cron": "^3.0.3"
   },
   "author": "wangpeng1017",
   "license": "MIT"
