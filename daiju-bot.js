@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
 const CONFIG = {
     // 账号信息（改成自己的）
     userId: "1264",
-    apiKey: "DCFRs+hx2QlnMn2zjLFRlX5LthA4d8Ty",
+    apiKey: "bRWJH3EIFSia0pF/COv+1aRh/jm50q4=",
 
     // 路由
     routes: {
@@ -259,12 +259,15 @@ async function doFarmJob() {
                 log('种植', '种子不足，请购买葡萄种子');
             }
         } else {
-            // 检查正在生长的作物数量
-            const growingPlots = page.locator('.farm-module__IQ8sKW__farmPlot')
-                .filter({ hasText: /葡萄|生长/ });
+            // 检查正在生长的作物数量（有 timer 元素说明正在生长）
+            const allPlots = page.locator('.farm-module__IQ8sKW__farmPlot');
+            const totalCount = await allPlots.count().catch(() => 0);
+
+            // 有倒计时的是生长中
+            const growingPlots = page.locator('.farm-module__IQ8sKW__farmPlot:has(.farm-module__IQ8sKW__timer)');
             const growingCount = await growingPlots.count().catch(() => 0);
 
-            log('状态', `无空地，${growingCount} 块地正在生长中`);
+            log('状态', `共 ${totalCount} 块地，${growingCount} 块正在生长中`);
         }
 
     } catch (err) {
