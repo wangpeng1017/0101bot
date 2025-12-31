@@ -97,19 +97,38 @@ async function restartBrowser() {
 // ============ 路由管理 ============
 async function ensureRoute(targetUrl) {
     try {
-        const isLoginVisible = await page.locator('#userId').count() > 0;
+        const currentUrl = page.url();
 
-        if (isLoginVisible || page.url().includes('/login')) {
+        // 1. 已经在目标页面，直接返回
+        if (currentUrl.includes(targetUrl.replace('https://game.daiju.live', ''))) {
+            return;
+        }
+
+        // 2. 在登录页，需要登录
+        if (currentUrl.includes('/login')) {
             log('登录', '检测到登录页，正在登录...');
+            await page.fill('#userId', CONFIG.userId);
+            await page.fill('#apiKey', CONFIG.apiKey);
+            await page.click('button:has-text("开始游戏")');
+            await page.waitForTimeout(5000);
+            log('登录', '登录成功');
+        }
+
+        // 3. 导航到目标页面
+        if (!page.url().includes(targetUrl.replace('https://game.daiju.live', ''))) {
+            await page.goto(targetUrl);
+            await page.waitForLoadState('networkidle');
+        }
+
+        // 4. 再次检查是否被重定向到登录页
+        if (page.url().includes('/login')) {
+            log('登录', '需要重新登录...');
             await page.fill('#userId', CONFIG.userId);
             await page.fill('#apiKey', CONFIG.apiKey);
             await page.click('button:has-text("开始游戏")');
             await page.waitForTimeout(5000);
             await page.goto(targetUrl);
             log('登录', '登录成功');
-        } else if (!page.url().includes(targetUrl)) {
-            await page.goto(targetUrl);
-            await page.waitForLoadState('networkidle');
         }
     } catch (err) {
         log('路由', `导航失败: ${err.message}`);
