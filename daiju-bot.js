@@ -198,8 +198,8 @@ async function doFarmJob() {
         const runningHours = (runningTime / (1000 * 60 * 60)).toFixed(1);
         log('巡检', `===== 第 ${checkCount} 次巡检 (运行 ${runningHours}h) =====`);
 
-        // 1. 收割成熟作物
-        const harvestBtns = page.locator('.farm-module__IQ8sKW__harvestButton');
+        // 1. 收割成熟作物（使用文本选择器，更稳定）
+        const harvestBtns = page.locator('button:has-text("收获")');
         const harvestCount = await harvestBtns.count();
 
         if (harvestCount > 0) {
@@ -220,27 +220,28 @@ async function doFarmJob() {
             return;
         }
 
-        // 2. 种植空地
-        const emptyPlots = page.locator('.farm-module__IQ8sKW__farmPlot')
-            .filter({ hasText: '空田地' });
+        // 2. 种植空地（使用文本选择器）
+        const emptyPlots = page.locator('text=空田地');
         const plotCount = await emptyPlots.count();
 
         if (plotCount > 0) {
             log('种植', `检测到 ${plotCount} 块空田地`);
 
-            const grapeSeed = page.locator('.farm-module__IQ8sKW__seedItem')
-                .filter({ hasText: '葡萄' }).first();
+            // 优先种葡萄，没有就种其他种子
+            let seedSelector = page.locator('text=葡萄').first();
+            if (await seedSelector.count() === 0) {
+                seedSelector = page.locator('[cursor=pointer]:has-text("×")').first();
+            }
 
-            if (await grapeSeed.count() > 0) {
+            if (await seedSelector.count() > 0) {
                 for (let i = 0; i < plotCount; i++) {
                     try {
                         // 选中种子
-                        await grapeSeed.click({ force: true });
+                        await seedSelector.click({ force: true });
                         await page.waitForTimeout(800);
 
                         // 点击空地种植
-                        const currentPlot = page.locator('.farm-module__IQ8sKW__farmPlot')
-                            .filter({ hasText: '空田地' }).first();
+                        const currentPlot = page.locator('text=空田地').first();
 
                         if (await currentPlot.count() === 0) {
                             log('种植', `  已无空地，停止种植`);
@@ -256,18 +257,11 @@ async function doFarmJob() {
                     }
                 }
             } else {
-                log('种植', '种子不足，请购买葡萄种子');
+                log('种植', '种子不足，请购买种子');
             }
         } else {
-            // 检查正在生长的作物数量（有 timer 元素说明正在生长）
-            const allPlots = page.locator('.farm-module__IQ8sKW__farmPlot');
-            const totalCount = await allPlots.count().catch(() => 0);
-
-            // 有倒计时的是生长中
-            const growingPlots = page.locator('.farm-module__IQ8sKW__farmPlot:has(.farm-module__IQ8sKW__timer)');
-            const growingCount = await growingPlots.count().catch(() => 0);
-
-            log('状态', `共 ${totalCount} 块地，${growingCount} 块正在生长中`);
+            // 没有空地也没有可收获的，说明都在生长中
+            log('状态', '所有田地正在生长中，等待成熟...');
         }
 
     } catch (err) {
